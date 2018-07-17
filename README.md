@@ -43,5 +43,14 @@ Each file name will be the application ID from ApplyTexas.
         error_log($e->getMessage());
     }
 
+## Write a PDF version of a transcript
+
+    use Shedi\Transcript;
+    try {
+        Transcript::writePdf('/path/to/1234567890123.json', '/path/for/output/1234567890123.pdf');
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
 More docs and tests coming shortly...
 
