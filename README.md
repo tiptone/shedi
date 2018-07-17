@@ -32,7 +32,7 @@ All efforts are made to generate unique file names.
 
 ## Split Application file into JSON files
 
-Each filename will be the application ID from ApplyTexas.
+Each file name will be the application ID from ApplyTexas.
 
     // path/to/edi/189.txt will be split into:
     // /path/for/output/*.json
