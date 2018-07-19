@@ -5,6 +5,7 @@ use Zend_Pdf;
 use Zend_Pdf_Page;
 use Zend_Pdf_Color_Html;
 use Zend_Pdf_Font;
+use JMS\Serializer\SerializerBuilder;
 
 class Transcript
 {
@@ -2304,31 +2305,33 @@ class Transcript
             $tempLines[] = str_pad("Rpt", $pad, ' ', STR_PAD_LEFT);
             $tempIndex[] = 10;
 
-            foreach ($session->crss as $course) {
-                switch ($course->crs->courseRepeat) {
-                    case 'N':
-                        $repeat = 'E';
-                        break;
-                    case 'R':
-                        $repeat = 'I';
-                        break;
-                    default:
-                        $repeat = $course->crs->courseRepeat;
-                        break;
-                }
-                $tempLines[] = str_pad("   {$course->crs->courseSubjectAbbreviation}    {$course->crs->courseNumber} {$course->crs->courseTitle}", 60, ' ', STR_PAD_RIGHT) . str_pad($course->crs->creditHoursEarned, 5, STR_PAD_LEFT) . " {$course->crs->grade}          $repeat ";
-                $tempIndex[] = 10;
+            if (is_array($session->crss)) {
+                foreach ($session->crss as $course) {
+                    switch ($course->crs->courseRepeat) {
+                        case 'N':
+                            $repeat = 'E';
+                            break;
+                        case 'R':
+                            $repeat = 'I';
+                            break;
+                        default:
+                            $repeat = $course->crs->courseRepeat;
+                            break;
+                    }
+                    $tempLines[] = str_pad("   {$course->crs->courseSubjectAbbreviation}    {$course->crs->courseNumber} {$course->crs->courseTitle}", 60, ' ', STR_PAD_RIGHT) . str_pad($course->crs->creditHoursEarned, 5, STR_PAD_LEFT) . " {$course->crs->grade}          $repeat ";
+                    $tempIndex[] = 10;
 
-                if (isset($course->raps)) {
-                    foreach ($course->raps as $rap) {
-                        $tempLines[] = "     RAP: {$rap->courseRequirement} {$rap->mainCategoryOfRequirement} {$rap->lesserCategoryOfRequirement} ({$rap->usageIndicator}{$rap->requirementMet})";
-                        $tempIndex[] = 10;
+                    if (isset($course->raps)) {
+                        foreach ($course->raps as $rap) {
+                            $tempLines[] = "     RAP: {$rap->courseRequirement} {$rap->mainCategoryOfRequirement} {$rap->lesserCategoryOfRequirement} ({$rap->usageIndicator}{$rap->requirementMet})";
+                            $tempIndex[] = 10;
+                        }
                     }
                 }
-            }
 
-            $tempLines[] = str_repeat('-', $pad);
-            $tempIndex[] = 10;
+                $tempLines[] = str_repeat('-', $pad);
+                $tempIndex[] = 10;
+            }
 
             // don't overflow the end of the page
             if ($index - array_sum($tempIndex) <= 0) {
@@ -2354,6 +2357,23 @@ class Transcript
         $out = $pdf->render();
 
         if (!file_put_contents($outfile, $out)) {
+            throw new \Exception("Not writable: $outfile");
+        }
+    }
+
+    public static function writeXml($infile, $outfile)
+    {
+        if (!file_exists($infile)) {
+            throw new \Exception("File not found: $infile");
+        }
+
+        $transcript = json_decode(file_get_contents($infile));
+
+        $serializer = SerializerBuilder::create()->build();
+
+        $xml = $serializer->serialize($transcript, 'xml');
+
+        if (!file_put_contents($outfile, $xml)) {
             throw new \Exception("Not writable: $outfile");
         }
     }
