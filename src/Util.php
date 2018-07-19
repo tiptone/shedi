@@ -1,16 +1,18 @@
 <?php
 namespace Shedi;
 
+use Shedi\RuntimeException;
+
 class Util
 {
     public static function splitFile($infile, $outdir)
     {
         if (!file_exists($infile)) {
-            throw new \Exception("File not found: $infile");
+            throw new RuntimeException("File not found: $infile");
         }
 
         if (!is_writable($outdir)) {
-            throw new \Exception("Not writable: $outdir");
+            throw new RuntimeException("Not writable: $outdir");
         }
 
         $currentState = 0;
